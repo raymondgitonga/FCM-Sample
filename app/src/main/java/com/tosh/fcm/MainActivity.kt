@@ -10,8 +10,10 @@ import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import com.google.firebase.iid.FirebaseInstanceId
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -23,12 +25,14 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         createNotificationChannel()
+        regisrationToken()
 
         buy_btn.setOnClickListener {
            val  numberOfCookies = cookies.text.toString()
 
             val intent = Intent(this, CookieActivity::class.java)
-            val pendingIntent = PendingIntent.getActivity(this, 0, intent, 0)
+            intent.putExtra("cookie", numberOfCookies)
+            val pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
             val largeImage = BitmapFactory.decodeResource(resources, R.drawable.cookie)
 
 
@@ -39,6 +43,9 @@ class MainActivity : AppCompatActivity() {
                 .setContentIntent(pendingIntent)
                 .setAutoCancel(true)
                 .setLargeIcon(largeImage)
+                .setStyle(NotificationCompat.BigPictureStyle().bigPicture(largeImage).bigLargeIcon(null))
+                .addAction(R.mipmap.ic_launcher, "Get Bonus!!", pendingIntent)
+                .setColor(resources.getColor(R.color.colorAccent))
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
 
             val notificationManagerCompat = NotificationManagerCompat.from(this)
@@ -61,5 +68,19 @@ class MainActivity : AppCompatActivity() {
                 getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
+    }
+
+    private fun regisrationToken(){
+        FirebaseInstanceId.getInstance().instanceId
+            .addOnCompleteListener {
+                if (!it.isSuccessful){
+                    Log.w("TAG", "getInstanceFailed", it.exception)
+                }
+
+                var token = it.result!!.token
+
+                Toast.makeText(this,token, Toast.LENGTH_LONG).show()
+                Log.d("Token", token)
+            }
     }
 }
