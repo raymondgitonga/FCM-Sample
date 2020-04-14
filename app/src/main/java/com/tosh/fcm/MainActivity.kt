@@ -14,6 +14,8 @@ import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.google.firebase.iid.FirebaseInstanceId
+import com.google.firebase.messaging.FirebaseMessaging
+import com.google.firebase.messaging.FirebaseMessagingService
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -28,22 +30,28 @@ class MainActivity : AppCompatActivity() {
         regisrationToken()
 
         buy_btn.setOnClickListener {
-           val  numberOfCookies = cookies.text.toString()
+            val numberOfCookies = cookies.text.toString()
+            subscribeToDiscount(Integer.valueOf(numberOfCookies))
 
             val intent = Intent(this, CookieActivity::class.java)
             intent.putExtra("cookie", numberOfCookies)
-            val pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+            val pendingIntent =
+                PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
             val largeImage = BitmapFactory.decodeResource(resources, R.drawable.cookie)
 
 
-            var  builder = NotificationCompat.Builder(this, CHANNEL_ID)
+            var builder = NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_chat)
                 .setContentTitle("Cookies")
                 .setContentText("You just bought $numberOfCookies cookies!")
                 .setContentIntent(pendingIntent)
                 .setAutoCancel(true)
                 .setLargeIcon(largeImage)
-                .setStyle(NotificationCompat.BigPictureStyle().bigPicture(largeImage).bigLargeIcon(null))
+                .setStyle(
+                    NotificationCompat.BigPictureStyle().bigPicture(largeImage).bigLargeIcon(
+                        null
+                    )
+                )
                 .addAction(R.mipmap.ic_launcher, "Get Bonus!!", pendingIntent)
                 .setColor(resources.getColor(R.color.colorAccent))
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
@@ -70,17 +78,49 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun regisrationToken(){
+    private fun regisrationToken() {
         FirebaseInstanceId.getInstance().instanceId
             .addOnCompleteListener {
-                if (!it.isSuccessful){
+                if (!it.isSuccessful) {
                     Log.w("TAG", "getInstanceFailed", it.exception)
                 }
 
                 var token = it.result!!.token
 
-                Toast.makeText(this,token, Toast.LENGTH_LONG).show()
+                Toast.makeText(this, token, Toast.LENGTH_LONG).show()
                 Log.d("Token", token)
             }
+    }
+
+    private fun subscribeToDiscount(cookies: Int) {
+        if (cookies <= 50) {
+            FirebaseMessaging.getInstance().subscribeToTopic("small_discount")
+                .addOnCompleteListener {
+                    if (!it.isSuccessful) {
+                        Toast.makeText(
+                            this,
+                            "Failed to subscribe to small discount",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    } else {
+                        Toast.makeText(this, "Subscribed to small discount", Toast.LENGTH_LONG)
+                            .show()
+                    }
+                }
+        } else {
+            FirebaseMessaging.getInstance().subscribeToTopic("huge_discount")
+                .addOnCompleteListener {
+                    if (!it.isSuccessful) {
+                        Toast.makeText(
+                            this,
+                            "Failed to subscribe to huge discount",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    } else {
+                        Toast.makeText(this, "Subscribed to huge discount", Toast.LENGTH_LONG)
+                            .show()
+                    }
+                }
+        }
     }
 }
