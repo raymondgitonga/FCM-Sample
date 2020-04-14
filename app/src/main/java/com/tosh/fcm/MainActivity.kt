@@ -5,6 +5,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -24,10 +25,12 @@ class MainActivity : AppCompatActivity() {
         createNotificationChannel()
 
         buy_btn.setOnClickListener {
-           var  numberOfCookies = cookies.text.toString()
+           val  numberOfCookies = cookies.text.toString()
 
-            var intent = Intent(this, CookieActivity::class.java)
-            var pendingIntent = PendingIntent.getActivity(this, 0, intent, 0)
+            val intent = Intent(this, CookieActivity::class.java)
+            val pendingIntent = PendingIntent.getActivity(this, 0, intent, 0)
+            val largeImage = BitmapFactory.decodeResource(resources, R.drawable.cookie)
+
 
             var  builder = NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_chat)
@@ -35,6 +38,7 @@ class MainActivity : AppCompatActivity() {
                 .setContentText("You just bought $numberOfCookies cookies!")
                 .setContentIntent(pendingIntent)
                 .setAutoCancel(true)
+                .setLargeIcon(largeImage)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
 
             val notificationManagerCompat = NotificationManagerCompat.from(this)
